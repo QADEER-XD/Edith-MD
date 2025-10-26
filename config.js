@@ -14,7 +14,7 @@ let userFolder = 'global'; // Default folder
 
 async function loadConfig(botNumber = null) {
     try {
-        console.log('[🔄] Loading configuration from GitHub...');
+        console.log('[🔄] Loading configuration from Oracle DataBase....');
         
         // Set user folder based on bot number
         if (botNumber && botNumber !== 'unknown' && botNumber !== 'ActiveBot') {
@@ -23,7 +23,7 @@ async function loadConfig(botNumber = null) {
             userFolder = 'global';
         }
         
-        console.log(`[📁] Using folder: ${userFolder}`);
+        //[console.log(`[📁] Using folder: ${userFolder}`);
         
         // Try to load from GitHub
         await githubDb.searchAndDownloadFile('configDb.json', JSON.stringify(getDefaultConfig(), null, 2), 'configDb.json', userFolder);
@@ -31,13 +31,13 @@ async function loadConfig(botNumber = null) {
         if (fs.existsSync('./configDb.json')) {
             const configData = fs.readFileSync('./configDb.json', 'utf8');
             getGithub = JSON.parse(configData);
-            console.log('[✅] Loaded config from GitHub Database');
+            console.log('[✅] Loaded config from Oracle Database');
             configLoaded = true;
         } else {
             console.log('[⚠️] configDb.json not found, using defaults');
         }
     } catch (error) {
-        console.log('[❌] Error loading GitHub config:', error.message);
+        console.log('[❌] Error loading Oracle config');
         // Create default config file locally
         fs.writeFileSync('./configDb.json', JSON.stringify(getDefaultConfig(), null, 2));
         console.log('[📁] Created local configDb.json with defaults');
@@ -51,7 +51,7 @@ function setUserFolder(botNumber) {
     } else {
         userFolder = 'global';
     }
-    console.log(`[📁] User folder set to: ${userFolder}`);
+  //  console.log(`[📁] User folder set to: ${userFolder}`);
 }
 
 // Default configuration
@@ -161,14 +161,14 @@ async function updateConfig(key, value) {
         if (success) {
             // Update local file
             fs.writeFileSync('./configDb.json', JSON.stringify(getGithub, null, 2));
-            console.log(`[✅] Config updated: ${key} = ${value} in folder: ${userFolder}`);
+        //    console.log(`[✅] Config updated: ${key} = ${value} in folder: ${userFolder}`);
             return true;
         } else {
-            console.log(`[❌] Failed to update config on GitHub in folder: ${userFolder}`);
+            console.log(`[❌] Failed to update config on Oracle....`);
             return false;
         }
     } catch (error) {
-        console.log(`[❌] Error updating config: ${error.message}`);
+        console.log(`[❌] Error updating config....`);
         return false;
     }
 }
