@@ -3,6 +3,10 @@ const githubDb = require('./lib/githubDb');
 
 if (fs.existsSync('config.env')) require('dotenv').config({ path: './config.env' });
 
+function convertToBool(text, fault = 'true') {
+    return text === fault ? true : false;
+}
+
 // Load configuration with GitHub priority
 let getGithub = {};
 let configLoaded = false;
@@ -29,15 +33,18 @@ async function loadConfig(botNumber = null) {
             getGithub = JSON.parse(configData);
             console.log('[✅] Loaded config from GitHub Database');
             configLoaded = true;
+        } else {
+            console.log('[⚠️] configDb.json not found, using defaults');
         }
     } catch (error) {
         console.log('[❌] Error loading GitHub config:', error.message);
         // Create default config file locally
         fs.writeFileSync('./configDb.json', JSON.stringify(getDefaultConfig(), null, 2));
+        console.log('[📁] Created local configDb.json with defaults');
     }
 }
 
-// Set user folder dynamically
+// Set user folder dynamically - YEH FUNCTION ADD KARNA HAI
 function setUserFolder(botNumber) {
     if (botNumber && botNumber !== 'unknown' && botNumber !== 'ActiveBot') {
         userFolder = `users/${botNumber}`;
@@ -191,8 +198,8 @@ const configModule = {
     set: updateConfig,
     getAll: getAllConfig,
     init: loadConfig,
-    setUserFolder: setUserFolder,
-    getUserFolder: getUserFolder,
+    setUserFolder: setUserFolder,  // ✅ YEH LINE IMPORTANT HAI
+    getUserFolder: getUserFolder,  // ✅ YEH BHI
     isGitHubLoaded: () => configLoaded
 };
 
