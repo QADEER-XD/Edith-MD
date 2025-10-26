@@ -3,35 +3,48 @@ const githubDb = require('./lib/githubDb');
 
 if (fs.existsSync('config.env')) require('dotenv').config({ path: './config.env' });
 
-function convertToBool(text, fault = 'true') {
-    return text === fault ? true : false;
-}
-
 // Load configuration with GitHub priority
 let getGithub = {};
 let configLoaded = false;
+let userFolder = 'global'; // Default folder
 
-async function loadConfig() {
+async function loadConfig(botNumber = null) {
     try {
         console.log('[🔄] Loading configuration from GitHub...');
         
-        // Try to load from GitHub first
-        await githubDb.searchAndDownloadFile('configDb.json', JSON.stringify(getDefaultConfig(), null, 2), 'configDb.json');
+        // Set user folder based on bot number
+        if (botNumber && botNumber !== 'unknown' && botNumber !== 'ActiveBot') {
+            userFolder = `users/${botNumber}`;
+        } else {
+            userFolder = 'global';
+        }
+        
+        console.log(`[📁] Using folder: ${userFolder}`);
+        
+        // Try to load from GitHub
+        await githubDb.searchAndDownloadFile('configDb.json', JSON.stringify(getDefaultConfig(), null, 2), 'configDb.json', userFolder);
         
         if (fs.existsSync('./configDb.json')) {
             const configData = fs.readFileSync('./configDb.json', 'utf8');
             getGithub = JSON.parse(configData);
             console.log('[✅] Loaded config from GitHub Database');
             configLoaded = true;
-        } else {
-            console.log('[⚠️] configDb.json not found, using defaults');
         }
     } catch (error) {
         console.log('[❌] Error loading GitHub config:', error.message);
         // Create default config file locally
         fs.writeFileSync('./configDb.json', JSON.stringify(getDefaultConfig(), null, 2));
-        console.log('[📁] Created local configDb.json with defaults');
     }
+}
+
+// Set user folder dynamically
+function setUserFolder(botNumber) {
+    if (botNumber && botNumber !== 'unknown' && botNumber !== 'ActiveBot') {
+        userFolder = `users/${botNumber}`;
+    } else {
+        userFolder = 'global';
+    }
+    console.log(`[📁] User folder set to: ${userFolder}`);
 }
 
 // Default configuration
@@ -135,16 +148,16 @@ async function updateConfig(key, value) {
         // Update local GitHub config
         getGithub[key] = value;
         
-        // Save to GitHub
-        const success = await githubDb.githubClearAndWriteFile('configDb.json', JSON.stringify(getGithub, null, 2));
+        // Save to GitHub with user folder
+        const success = await githubDb.githubClearAndWriteFile('configDb.json', JSON.stringify(getGithub, null, 2), userFolder);
         
         if (success) {
             // Update local file
             fs.writeFileSync('./configDb.json', JSON.stringify(getGithub, null, 2));
-            console.log(`[✅] Config updated: ${key} = ${value}`);
+            console.log(`[✅] Config updated: ${key} = ${value} in folder: ${userFolder}`);
             return true;
         } else {
-            console.log(`[❌] Failed to update config on GitHub`);
+            console.log(`[❌] Failed to update config on GitHub in folder: ${userFolder}`);
             return false;
         }
     } catch (error) {
@@ -167,12 +180,19 @@ function getAllConfig() {
     return allConfig;
 }
 
+// Get current user folder
+function getUserFolder() {
+    return userFolder;
+}
+
 // Initialize the config module
 const configModule = {
     get: getConfig,
     set: updateConfig,
     getAll: getAllConfig,
     init: loadConfig,
+    setUserFolder: setUserFolder,
+    getUserFolder: getUserFolder,
     isGitHubLoaded: () => configLoaded
 };
 
