@@ -9,7 +9,7 @@
     "restart": "pm2 restart EDITH-MD"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "npm:baileys-mod",
+    "@whiskeysockets/baileys": "github:Jeliostarr/DEV-Baileys",
     "axios": "^1.7.9",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
